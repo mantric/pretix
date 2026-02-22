@@ -94,9 +94,9 @@ The exporter class
 
    .. automethod:: get_required_event_permission
 
-On organizer level, by default exporters are expected to handle on a *set of events* and the system will automatically
+On organizer level, by default exporters are expected to handle a *set of events* and the system will automatically
 add a form field that allows the selection of events, limited to events the user has correct permissions for. If this
-does not fit your organizer, because it is not related to events, you should **also** inherit from the following class:
+does not fit your exporter, because it is not related to events, you should **also** inherit from the following class:
 
 .. class:: pretix.base.exporter.OrganizerLevelExportMixin
 

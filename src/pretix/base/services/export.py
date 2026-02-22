@@ -205,7 +205,7 @@ def init_event_exporters(event, user=None, token=None, device=None, request=None
             continue
 
         if issubclass(response, OrganizerLevelExportMixin):
-            raise TypeError("Cannot user organizer-level exporter on event level")
+            raise TypeError("Cannot use organizer-level exporter on event level")
 
         permission_name = response.get_required_event_permission()
         if not perm_holder.has_event_permission(event.organizer, event, permission_name, request) and not staff_session:

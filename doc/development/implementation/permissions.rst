@@ -201,13 +201,13 @@ Adding permissions
 
 Plugins can add permissions through the ``register_event_permission_groups`` and ``register_organizer_permission_groups``.
 We recommend to use this only for very significant permissions, as the system will become less usable with too many
-permission levels, also because the team page will show all permission options, even those of disabled plugins.
+permission levels, especially since the team page will show all permission options, even those of disabled plugins.
 
 To register your permissions, you need to register a **permission group** (often representing an area of functionality
 or a key model). Below that group, there are **actions**, which represent the actual permissions. Permissions will be
 generated as ``<group_name>:<action>``. Then, you need to define **options** which are the valid combinations of the
 actions that should be possible to select for a team. This two-step mechanism exists to provide a better user experience
-and avoid useless combinations like "write but not read".
+and avoid impossible combinations like "write but not read".
 
 Example::
 

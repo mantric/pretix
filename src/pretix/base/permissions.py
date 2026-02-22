@@ -142,7 +142,7 @@ def assert_valid_event_permission(permission, allow_legacy=True, allow_tuple=Tru
         raise ValueError(f"Not allowed to use legacy permission '{permission}'")
     all_permissions = get_all_event_permissions()
     if permission not in all_permissions:
-        # Warning *and* exception because warning is silently caught when used in if statements in Django templates
+        # Warning *and* exception because exception is silently caught when used in if statements in Django templates
         warnings.warn(f"Use of undefined permission '{permission}'")
         raise Exception(f"Undefined permission '{permission}'")
 
