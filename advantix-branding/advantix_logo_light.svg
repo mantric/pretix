@@ -1,0 +1,66 @@
+<svg viewBox="0 0 480 160" xmlns="http://www.w3.org/2000/svg" width="480" height="160">
+  <defs>
+    <linearGradient id="deepGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#B8821E;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#D4A530;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8A5F10;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="midnightFlat" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0D1220;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A2040;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Light background -->
+  <rect x="0" y="0" width="480" height="160" rx="16" fill="#F7F5F0"/>
+
+  <!-- Subtle texture lines -->
+  <line x1="0" y1="155" x2="480" y2="155" stroke="#E8E4DC" stroke-width="1"/>
+
+  <!-- LOGOMARK on light bg -->
+  <polygon points="60,30 100,15 115,30 115,130 100,145 60,145 45,130 45,30" 
+           fill="none" stroke="url(#midnightFlat)" stroke-width="2.5" opacity="0.7"/>
+
+  <!-- Inner 'A' mark -->
+  <polygon points="80,42 100,118 92,118 80,80 68,118 60,118" 
+           fill="url(#midnightFlat)"/>
+  <rect x="64" y="93" width="32" height="6" rx="1" fill="url(#midnightFlat)"/>
+
+  <!-- Gold accent overlay on A -->
+  <polygon points="80,42 100,118 92,118 80,80 68,118 60,118" 
+           fill="url(#deepGold)" opacity="0.18"/>
+  <rect x="64" y="93" width="32" height="6" rx="1" fill="url(#deepGold)" opacity="0.25"/>
+
+  <!-- Perforations -->
+  <circle cx="45" cy="67" r="4" fill="#F7F5F0"/>
+  <circle cx="45" cy="93" r="4" fill="#F7F5F0"/>
+  <circle cx="45" cy="119" r="4" fill="#F7F5F0"/>
+  <circle cx="115" cy="67" r="4" fill="#F7F5F0"/>
+  <circle cx="115" cy="93" r="4" fill="#F7F5F0"/>
+  <circle cx="115" cy="119" r="4" fill="#F7F5F0"/>
+
+  <!-- Film strip dots -->
+  <rect x="48" y="18" width="10" height="7" rx="1.5" fill="url(#deepGold)" opacity="0.6"/>
+  <rect x="62" y="18" width="10" height="7" rx="1.5" fill="url(#deepGold)" opacity="0.6"/>
+  <rect x="76" y="18" width="10" height="7" rx="1.5" fill="url(#deepGold)" opacity="0.6"/>
+  <rect x="90" y="18" width="10" height="7" rx="1.5" fill="url(#deepGold)" opacity="0.6"/>
+
+  <!-- WORDMARK dark -->
+  <text x="148" y="96" 
+        font-family="'Georgia', 'Times New Roman', serif" 
+        font-size="52" 
+        font-weight="700"
+        letter-spacing="6"
+        fill="url(#midnightFlat)">ADVANTIX</text>
+
+  <!-- Gold rule -->
+  <line x1="148" y1="107" x2="456" y2="107" stroke="url(#deepGold)" stroke-width="1" opacity="0.5"/>
+
+  <!-- Tagline -->
+  <text x="150" y="126" 
+        font-family="'Georgia', serif" 
+        font-size="12.5"
+        letter-spacing="5.5"
+        fill="#8A7A60"
+        font-weight="400">ENTERTAINMENT TICKETING</text>
+</svg>

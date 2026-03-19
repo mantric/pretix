@@ -1,0 +1,64 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+  <defs>
+    <linearGradient id="igold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5C842"/>
+      <stop offset="50%" style="stop-color:#FFE085"/>
+      <stop offset="100%" style="stop-color:#C9972A"/>
+    </linearGradient>
+    <linearGradient id="ibg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A0E1A"/>
+      <stop offset="100%" style="stop-color:#141828"/>
+    </linearGradient>
+    <filter id="iglow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="ishadow">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#F5C842" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background square with rounded corners -->
+  <rect width="200" height="200" rx="32" fill="url(#ibg)"/>
+
+  <!-- Subtle grid pattern -->
+  <line x1="0" y1="100" x2="200" y2="100" stroke="#FFFFFF" stroke-width="0.4" opacity="0.04"/>
+  <line x1="100" y1="0" x2="100" y2="200" stroke="#FFFFFF" stroke-width="0.4" opacity="0.04"/>
+
+  <!-- Ticket shape (large) -->
+  <polygon points="100,14 136,20 150,36 150,164 136,180 100,186 64,180 50,164 50,36 64,20"
+           fill="none" stroke="url(#igold)" stroke-width="2.5" opacity="0.5" filter="url(#ishadow)"/>
+
+  <!-- Film strip notches top -->
+  <rect x="62" y="14" width="13" height="9" rx="2" fill="url(#igold)" opacity="0.45"/>
+  <rect x="79" y="14" width="13" height="9" rx="2" fill="url(#igold)" opacity="0.45"/>
+  <rect x="96" y="14" width="13" height="9" rx="2" fill="url(#igold)" opacity="0.45"/>
+  <rect x="113" y="14" width="13" height="9" rx="2" fill="url(#igold)" opacity="0.45"/>
+
+  <!-- Film strip notches bottom -->
+  <rect x="62" y="177" width="13" height="9" rx="2" fill="url(#igold)" opacity="0.45"/>
+  <rect x="79" y="177" width="13" height="9" rx="2" fill="url(#igold)" opacity="0.45"/>
+  <rect x="96" y="177" width="13" height="9" rx="2" fill="url(#igold)" opacity="0.45"/>
+  <rect x="113" y="177" width="13" height="9" rx="2" fill="url(#igold)" opacity="0.45"/>
+
+  <!-- Perforation circles (sides) -->
+  <circle cx="50" cy="75"  r="7" fill="#0A0E1A" stroke="url(#igold)" stroke-width="1.2" opacity="0.5"/>
+  <circle cx="50" cy="100" r="7" fill="#0A0E1A" stroke="url(#igold)" stroke-width="1.2" opacity="0.5"/>
+  <circle cx="50" cy="125" r="7" fill="#0A0E1A" stroke="url(#igold)" stroke-width="1.2" opacity="0.5"/>
+  <circle cx="150" cy="75"  r="7" fill="#0A0E1A" stroke="url(#igold)" stroke-width="1.2" opacity="0.5"/>
+  <circle cx="150" cy="100" r="7" fill="#0A0E1A" stroke="url(#igold)" stroke-width="1.2" opacity="0.5"/>
+  <circle cx="150" cy="125" r="7" fill="#0A0E1A" stroke="url(#igold)" stroke-width="1.2" opacity="0.5"/>
+
+  <!-- Big bold A -->
+  <polygon points="100,38 136,162 122,162 100,95 78,162 64,162"
+           fill="url(#igold)" filter="url(#iglow)"/>
+  <!-- A crossbar -->
+  <rect x="70" y="122" width="60" height="11" rx="2" fill="url(#igold)"/>
+
+  <!-- Thin inner A outline for depth -->
+  <polygon points="100,44 132,158 120,158 100,100 80,158 68,158"
+           fill="none" stroke="#0A0E1A" stroke-width="2" opacity="0.3"/>
+</svg>

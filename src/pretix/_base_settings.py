@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'pretix.base',
     'pretix.control',
     'pretix.presale',
+    'pretix.plugins.advantixtheme.apps.AdvantixThemeApp',
     'pretix.multidomain',
     'pretix.api',
     'pretix.helpers',

@@ -56,6 +56,7 @@ After you deploy, record these values in your operator notes:
 - seeded demo storefront for `Advantix`
 - demo event pages under `/advantix/<event-slug>/`
 - pretix backend at `/control/`
+- seeded Advantix storefront branding with logo, favicon, hero copy, and social preview assets
 - image-based redeploys by rerunning the EC2 deploy script and restarting the instance services
 
 ## Files
@@ -65,6 +66,7 @@ After you deploy, record these values in your operator notes:
 - `pretix.cfg.template`: rendered instance config
 - `deploy-demo-ec2.sh`: one-shot EC2 bootstrap and app deploy
 - `advantix-root-redirect.js`: CloudFront viewer-request function source
+- `src/pretix/plugins/advantixtheme/`: storefront-only Advantix theme assets and CSS
 
 ## Phase 1: Base EC2 Deploy
 
@@ -89,8 +91,9 @@ The deploy script:
 - builds and pushes the image to ECR
 - creates or reuses the IAM role, profile, security group, EC2 instance, and EIP
 - uploads `docker-compose.yml`, `nginx.conf`, `.env`, and `pretix.cfg`
+- uploads the committed Advantix raster branding assets into `/data/branding/`
 - starts `db`, `redis`, and `pretix`
-- seeds the Advantix organizer, demo events, and admin user
+- seeds the Advantix organizer, branded storefront settings, demo events, and admin user
 
 First boot runs the full pretix migration set, so the site can return `502` briefly before becoming healthy.
 
@@ -137,6 +140,17 @@ CloudFront should:
 - redirect viewers from HTTP to HTTPS
 - send `X-Forwarded-Proto: https` to the origin
 - point to your EC2 public DNS name on HTTP port `80`
+
+## Branding Maintenance
+
+The demo branding is intentionally reproducible:
+
+- source SVG artwork lives in `advantix-branding/`
+- committed production PNG exports live in `src/pretix/plugins/advantixtheme/static/pretixplugins/advantixtheme/assets/`
+- the storefront-only CSS layer lives in `src/pretix/plugins/advantixtheme/static/pretixplugins/advantixtheme/advantix.css`
+- the deploy script copies those PNGs to `/data/branding/` and seeds pretix file settings from there
+
+If you update the Advantix look, regenerate the committed PNG exports first, then rerun `deployment/aws-demo/deploy-demo-ec2.sh` so the EC2 host receives the new assets and the seed step reapplies them.
 
 ## CloudFront Function Behavior
 

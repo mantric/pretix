@@ -1,0 +1,33 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+  <defs>
+    <linearGradient id="fgold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5C842"/>
+      <stop offset="100%" style="stop-color:#C9972A"/>
+    </linearGradient>
+    <filter id="fglow">
+      <feGaussianBlur stdDeviation="0.6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="32" height="32" rx="6" fill="#0A0E1A"/>
+
+  <!-- Ticket outline -->
+  <polygon points="16,2 24,4 27,7 27,25 24,28 16,30 8,28 5,25 5,7 8,4"
+           fill="none" stroke="url(#fgold)" stroke-width="1.4" opacity="0.6"/>
+
+  <!-- A mark -->
+  <polygon points="16,7 22,25 19,25 16,16 13,25 10,25"
+           fill="url(#fgold)" filter="url(#fglow)"/>
+  <rect x="11.5" y="19" width="9" height="2.5" rx="0.4" fill="url(#fgold)"/>
+
+  <!-- Perforation dots -->
+  <circle cx="5" cy="13" r="1.5" fill="#0A0E1A"/>
+  <circle cx="5" cy="19" r="1.5" fill="#0A0E1A"/>
+  <circle cx="27" cy="13" r="1.5" fill="#0A0E1A"/>
+  <circle cx="27" cy="19" r="1.5" fill="#0A0E1A"/>
+</svg>
