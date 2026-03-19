@@ -3,6 +3,10 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DEPLOY_DIR="$ROOT_DIR/deployment/aws-demo"
+BRAND_ASSET_DIR="$ROOT_DIR/src/pretix/plugins/advantixtheme/static/pretixplugins/advantixtheme/assets"
+HEADER_WORDMARK_ASSET="$BRAND_ASSET_DIR/advantix-header-wordmark.png"
+ICON_SOURCE_ASSET="$BRAND_ASSET_DIR/advantix-icon-source.png"
+SOCIAL_PREVIEW_ASSET="$BRAND_ASSET_DIR/advantix-social-preview.png"
 
 AWS_REGION="${AWS_REGION:-ap-south-1}"
 APP_NAME="${APP_NAME:-advantix-pretix-demo}"
@@ -42,6 +46,13 @@ cleanup() {
   rm -rf "$TMP_DIR"
 }
 trap cleanup EXIT
+
+for asset in "$HEADER_WORDMARK_ASSET" "$ICON_SOURCE_ASSET" "$SOCIAL_PREVIEW_ASSET"; do
+  [[ -f "$asset" ]] || {
+    echo "Missing branding asset: $asset" >&2
+    exit 1
+  }
+done
 
 ssm_wait_online() {
   local instance_id="$1"
@@ -220,6 +231,9 @@ send_file "$INSTANCE_ID" "$DEPLOY_DIR/docker-compose.yml" "${APP_DIR}/docker-com
 send_file "$INSTANCE_ID" "$DEPLOY_DIR/nginx.conf" "${APP_DIR}/nginx.conf"
 send_file "$INSTANCE_ID" "$TMP_DIR/pretix.cfg" "${APP_DIR}/pretix.cfg"
 send_file "$INSTANCE_ID" "$TMP_DIR/.env" "${APP_DIR}/.env" 0600
+send_file "$INSTANCE_ID" "$HEADER_WORDMARK_ASSET" "${APP_DIR}/data/branding/advantix-header-wordmark.png"
+send_file "$INSTANCE_ID" "$ICON_SOURCE_ASSET" "${APP_DIR}/data/branding/advantix-icon-source.png"
+send_file "$INSTANCE_ID" "$SOCIAL_PREVIEW_ASSET" "${APP_DIR}/data/branding/advantix-social-preview.png"
 
 cat >"$TMP_DIR/cronfile" <<EOF
 SHELL=/bin/bash
@@ -250,28 +264,89 @@ ssm_run "$INSTANCE_ID" \
 cat >"$TMP_DIR/seed.py" <<EOF
 from datetime import timedelta
 from decimal import Decimal
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
+from django.core.files import File
+from django.core.files.storage import default_storage
 from django.utils.timezone import now
 from django_scopes import scope
 
 from pretix.base.models import Event, Item, Organizer, Quota
 from pretix.base.payment import ManualPayment
 
+
 User = get_user_model()
+IVORY = "#F7F5F0"
+PRIMARY_GOLD = "#C9972A"
+SUCCESS = "#2F7A62"
+DANGER = "#A43A32"
+
+
+def store_branding_asset(source_path, target_name):
+    storage_name = f"branding/{target_name}"
+    if default_storage.exists(storage_name):
+        default_storage.delete(storage_name)
+    with Path(source_path).open("rb") as asset_file:
+        stored_name = default_storage.save(storage_name, File(asset_file, name=target_name))
+    return f"file://{stored_name}"
+
+
+def organizer_homepage_copy():
+    return """
+<div class="advantix-hero">
+<p class="advantix-kicker">Premium entertainment ticketing demo</p>
+<h2>Movie nights, concerts, and live comedy for India.</h2>
+<p class="advantix-lede">Advantix is a branded pretix showcase for multiplex premieres, arena shows, comedy drops, and high-visibility entertainment launches.</p>
+<div class="advantix-highlights">
+<p>Mumbai movie drops</p>
+<p>Concert onsales</p>
+<p>Comedy tours</p>
+</div>
+<div class="advantix-hero-actions">
+<a class="btn btn-primary" href="/advantix/mumbai-movie-night/">View movie demo</a>
+<a class="btn btn-default" href="/control/">Open demo backend</a>
+</div>
+</div>
+<div class="advantix-section-intro">
+<p class="advantix-section-eyebrow">Demo inventory</p>
+<p class="advantix-section-copy">Use the seeded public events below to test branded discovery, item selection, cart, checkout, and operator workflows from the same environment.</p>
+</div>
+""".strip()
+
+
+def event_frontpage_copy(spec):
+    highlights = "".join(f"<p>{label}</p>" for label in spec["highlights"])
+    return f"""
+<div class="advantix-hero advantix-hero-compact">
+<p class="advantix-kicker">{spec["kicker"]}</p>
+<h2>{spec["headline"]}</h2>
+<p class="advantix-lede">{spec["summary"]}</p>
+<div class="advantix-highlights">{highlights}</div>
+</div>
+""".strip()
+
+
 user, created = User.objects.get_or_create(email="${ADMIN_EMAIL}", defaults={"is_staff": True, "is_superuser": True, "is_active": True})
 if created:
     user.set_password("${ADMIN_PASSWORD}")
     user.fullname = "Advantix Admin"
     user.save()
 
+organizer_logo = store_branding_asset("/data/branding/advantix-header-wordmark.png", "advantix-header-wordmark.png")
+organizer_favicon = store_branding_asset("/data/branding/advantix-icon-source.png", "advantix-icon-source.png")
+social_preview = store_branding_asset("/data/branding/advantix-social-preview.png", "advantix-social-preview.png")
+
 orga, _ = Organizer.objects.get_or_create(name="Advantix", slug="advantix")
-orga.settings.primary_color = "#e36414"
-orga.settings.theme_color_success = "#2a9d8f"
-orga.settings.theme_color_danger = "#c1121f"
-orga.settings.theme_color_background = "#fff7ed"
-orga.settings.organizer_homepage_text = "Advantix is a demo storefront for movie and entertainment ticket sales in India."
-orga.settings.contact_mail = "demo@advantix.local"
+orga.settings.primary_color = PRIMARY_GOLD
+orga.settings.theme_color_success = SUCCESS
+orga.settings.theme_color_danger = DANGER
+orga.settings.theme_color_background = IVORY
+orga.settings.organizer_logo_image = organizer_logo
+orga.settings.organizer_logo_image_large = False
+orga.settings.favicon = organizer_favicon
+orga.settings.organizer_homepage_text = organizer_homepage_copy()
+orga.settings.contact_mail = "hello@advantix.tech"
 orga.save()
 
 events = [
@@ -280,6 +355,14 @@ events = [
         "name": "Mumbai Movie Night",
         "location": "PVR Juhu, Mumbai",
         "days": 10,
+        "kicker": "Friday premiere drop",
+        "headline": "A premium cinema night built for fast checkout.",
+        "summary": "Use this flow to validate tiered ticketing, storefront presentation, and a clean demo checkout for multiplex-style releases.",
+        "highlights": [
+            "INR pricing",
+            "Tiered seating inventory",
+            "Demo checkout only",
+        ],
         "items": [
             ("Silver Seat", Decimal("299.00"), 250),
             ("Premium Seat", Decimal("599.00"), 100),
@@ -290,9 +373,35 @@ events = [
         "name": "Bangalore Live Comedy",
         "location": "Koramangala Indoor Arena, Bengaluru",
         "days": 18,
+        "kicker": "Stand-up special demo",
+        "headline": "A polished onsale flow for live entertainment drops.",
+        "summary": "This event demonstrates category pricing, upsell positioning, and how a touring comedy date looks in the branded storefront.",
+        "highlights": [
+            "Comedy tour format",
+            "Front-row upsell",
+            "Organizer-ready admin",
+        ],
         "items": [
             ("General Admission", Decimal("499.00"), 300),
             ("Front Row", Decimal("999.00"), 60),
+        ],
+    },
+    {
+        "slug": "delhi-indie-concert",
+        "name": "Delhi Indie Concert",
+        "location": "NSIC Grounds, Okhla, New Delhi",
+        "days": 24,
+        "kicker": "Live music showcase",
+        "headline": "Concert ticketing with a cinematic storefront shell.",
+        "summary": "Use this seeded event to review pricing ladders, demand messaging, and how music-category inventory fits the Advantix brand.",
+        "highlights": [
+            "Concert-ready pricing",
+            "Large-venue presentation",
+            "Shared organizer branding",
+        ],
+        "items": [
+            ("Floor Pass", Decimal("799.00"), 400),
+            ("Gold Circle", Decimal("1499.00"), 120),
         ],
     },
 ]
@@ -321,12 +430,17 @@ with scope(organizer=orga):
         event.is_public = True
         event.plugins = "pretix.plugins.sendmail,pretix.plugins.statistics,pretix.plugins.checkinlists,pretix.plugins.manualpayment"
         event.settings.timezone = "Asia/Kolkata"
-        event.settings.primary_color = "#e36414"
-        event.settings.theme_color_success = "#2a9d8f"
-        event.settings.theme_color_danger = "#c1121f"
-        event.settings.theme_color_background = "#fff7ed"
-        event.settings.contact_mail = "demo@advantix.local"
-        event.settings.banner_text = "Demo checkout only. No real tickets or payments are being processed."
+        event.settings.primary_color = PRIMARY_GOLD
+        event.settings.theme_color_success = SUCCESS
+        event.settings.theme_color_danger = DANGER
+        event.settings.theme_color_background = IVORY
+        event.settings.contact_mail = "hello@advantix.tech"
+        event.settings.banner_text = "<strong>Demo checkout only.</strong> No live tickets or payments are being processed on this staging site."
+        event.settings.organizer_logo_image_inherit = True
+        event.settings.logo_image = ""
+        event.settings.favicon = organizer_favicon
+        event.settings.og_image = social_preview
+        event.settings.frontpage_text = event_frontpage_copy(spec)
         event.save()
 
         manual = ManualPayment(event)
@@ -356,6 +470,9 @@ with scope(organizer=orga):
             item.default_price = price
             item.active = True
             item.admission = True
+            item.description = f"{name} for {spec['name']}"
+            item.position = pos
+            item.max_per_order = max_per_order
             item.save()
             event_items.append(item)
 
