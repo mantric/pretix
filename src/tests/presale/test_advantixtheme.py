@@ -55,6 +55,8 @@ def test_advantix_organizer_page_loads_theme_css_and_social_preview(advantix_env
     assert "pretixplugins/advantixtheme/advantix.css" in response.rendered_content
     assert "advantix-theme" in response.rendered_content
     assert "advantix-social-preview.png" in response.rendered_content
+    assert "advantix-logo-primary.svg" in response.rendered_content
+    assert "advantix-stage-header" in response.rendered_content
     assert "advantix-demo-badge" in response.rendered_content
     assert "Demo site" in response.rendered_content
 
@@ -66,6 +68,8 @@ def test_advantix_event_page_loads_theme_css(advantix_env, client):
     assert "pretixplugins/advantixtheme/advantix.css" in response.rendered_content
     assert "advantix-theme" in response.rendered_content
     assert "Premiere demo" in response.rendered_content
+    assert "advantix-logo-primary.svg" in response.rendered_content
+    assert "advantix-stage-header" in response.rendered_content
     assert "advantix-demo-badge" in response.rendered_content
 
 

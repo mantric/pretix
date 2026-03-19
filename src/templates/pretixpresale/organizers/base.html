@@ -22,9 +22,9 @@
     {{ block.super }}
 {% endblock %}
 {% block above %}
-    {% if organizer.settings.locales|length > 1 or request.organizer.settings.customer_accounts %}
+        {% if organizer.settings.locales|length > 1 or request.organizer.settings.customer_accounts %}
         {% if organizer.settings.theme_color_background|upper != "#FFFFFF" or organizer.settings.organizer_logo_image_large %}
-            <div class="container page-header-links">
+            <div class="container page-header-links{% if organizer.slug == "advantix" %} advantix-stage-header-links{% endif %}">
                 <div class="pull-right header-part flip">
                     {% if organizer.settings.locales|length > 1 %}
                         <nav class="locales" aria-label="{% trans "select language" %}">
@@ -44,15 +44,15 @@
     {% endif %}
 {% endblock %}
 {% block page %}
-    <div class="page-header{% if organizer_logo %} pager-header-with-logo{% endif %}{% if organizer_logo and organizer.settings.organizer_logo_image_large %} logo-large{% endif %}">
+    <div class="page-header{% if organizer_logo %} pager-header-with-logo{% endif %}{% if organizer_logo and organizer.settings.organizer_logo_image_large %} logo-large{% endif %}{% if organizer.slug == "advantix" %} advantix-stage-header{% endif %}">
         <div class="{% if not organizer_logo or not organizer.settings.organizer_logo_image_large %}pull-left flip{% endif %}">
             {% if organizer.slug == "advantix" %}
                 <h1 class="sr-only">
                     {{ organizer.name }}
                 </h1>
                 <a href="{% eventurl organizer "presale:organizer.index" %}" title="{{ organizer.name }}">
-                    <img src="{% static "pretixplugins/advantixtheme/assets/advantix-wordmark.svg" %}" alt="{{ organizer.name }}"
-                         class="organizer-logo advantix-wordmark" />
+                    <img src="{% static "pretixplugins/advantixtheme/assets/advantix-logo-primary.svg" %}" alt="{{ organizer.name }}"
+                         class="organizer-logo advantix-primary-logo" />
                 </a>
             {% elif organizer_logo %}
                 <h1 class="sr-only">
