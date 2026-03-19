@@ -1,0 +1,44 @@
+[pretix]
+instance_name=Advantix Demo
+url=http://__SITE_HOST__
+datadir=/data
+currency=INR
+registration=false
+plugins_default=pretix.plugins.sendmail,pretix.plugins.statistics,pretix.plugins.checkinlists
+# When fronted by CloudFront on a real domain, switch url to https://<domain>
+# and set trust_x_forwarded_proto=true.
+
+[locale]
+default=en
+timezone=Asia/Kolkata
+
+[database]
+backend=postgresql
+name=pretix
+user=pretix
+password=__DB_PASSWORD__
+host=db
+port=5432
+
+[redis]
+location=redis://redis:6379/0
+sessions=true
+
+[celery]
+broker=redis://redis:6379/1
+backend=redis://redis:6379/2
+
+[mail]
+from=Advantix Demo <noreply@__SITE_HOST__>
+host=localhost
+port=25
+tls=false
+ssl=false
+
+[urls]
+static=/static/
+media=/media/
+
+[django]
+debug=false
+secret=__DJANGO_SECRET__
