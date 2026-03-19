@@ -39,7 +39,7 @@
             </div>
         </div>
     {% endif %}
-    <div class="container page-header-links {% if event.settings.theme_color_background|upper != "#FFFFFF" or event_logo_image_large %}page-header-links-outside{% endif %}">
+    <div class="container page-header-links {% if event.settings.theme_color_background|upper != "#FFFFFF" or event_logo_image_large %}page-header-links-outside{% endif %}{% if request.organizer.slug == "advantix" %} advantix-stage-header-links{% endif %}">
         {% if event.settings.locales|length > 1 or request.organizer.settings.customer_accounts %}
             {% if event.settings.theme_color_background|upper != "#FFFFFF" or event_logo_image_large %}
                 <div class="pull-right header-part flip hidden-print">
@@ -72,7 +72,7 @@
     </div>
 {% endblock %}
 {% block page %}
-    <div class="page-header{% if event_logo %} pager-header-with-logo{% endif %}{% if event_logo and event_logo_image_large %} logo-large{% endif %}">
+    <div class="page-header{% if event_logo %} pager-header-with-logo{% endif %}{% if event_logo and event_logo_image_large %} logo-large{% endif %}{% if request.organizer.slug == "advantix" %} advantix-stage-header{% endif %}">
         <div class="{% if not event_logo or not event_logo_image_large %}pull-left flip{% endif %}">
             {% if request.organizer.slug == "advantix" %}
                 <h1 class="sr-only">
@@ -83,8 +83,8 @@
                 </h1>
                 <a href="{% eventurl event "presale:event.index" cart_namespace=cart_namespace|default_if_none:"" %}"
                    title="{% trans 'Homepage' %}">
-                    <img src="{% static "pretixplugins/advantixtheme/assets/advantix-wordmark.svg" %}" alt="{{ request.organizer.name }}"
-                         class="event-logo advantix-wordmark" />
+                    <img src="{% static "pretixplugins/advantixtheme/assets/advantix-logo-primary.svg" %}" alt="{{ request.organizer.name }}"
+                         class="event-logo advantix-primary-logo" />
                 </a>
             {% elif event_logo and not event_logo_show_title %}
                 <h1 class="sr-only">

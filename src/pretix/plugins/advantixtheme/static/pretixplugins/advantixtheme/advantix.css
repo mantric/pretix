@@ -25,6 +25,31 @@ body.advantix-theme .page-header-links {
     margin-top: 18px;
 }
 
+body.advantix-theme .advantix-stage-header-links {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+body.advantix-theme .advantix-stage-header-links .pull-left.flip,
+body.advantix-theme .advantix-stage-header-links .pull-right.flip {
+    float: none !important;
+}
+
+body.advantix-theme .advantix-stage-header-links .pull-right.flip {
+    margin-left: auto;
+    text-align: right;
+}
+
+body.advantix-theme .advantix-stage-header-links .header-part {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
 body.advantix-theme .page-header-links .header-part a,
 body.advantix-theme .page-header-links .header-part button,
 body.advantix-theme .page-header-links .locales a {
@@ -50,6 +75,24 @@ body.advantix-theme .page-header {
     overflow: hidden;
     padding: 28px 32px;
     position: relative;
+}
+
+body.advantix-theme .advantix-stage-header {
+    background:
+        radial-gradient(circle at top center, rgba(245, 200, 66, 0.24), transparent 42%),
+        radial-gradient(circle at 12% 18%, rgba(255, 224, 133, 0.10), transparent 24%),
+        linear-gradient(135deg, rgba(7, 11, 20, 0.98), rgba(20, 24, 40, 0.94));
+    padding: 34px clamp(22px, 4vw, 46px) 24px;
+    text-align: center;
+}
+
+body.advantix-theme .advantix-stage-header .pull-left.flip,
+body.advantix-theme .advantix-stage-header .pull-right.flip {
+    float: none !important;
+}
+
+body.advantix-theme .advantix-stage-header .clearfix {
+    display: none;
 }
 
 body.advantix-theme .page-header::after {
@@ -85,14 +128,16 @@ body.advantix-theme .page-header h1 small {
 
 body.advantix-theme .organizer-logo,
 body.advantix-theme .event-logo {
-    max-height: 72px;
-}
-
-body.advantix-theme .advantix-wordmark {
     display: block;
     height: auto;
-    max-height: 72px;
-    width: min(100%, 320px);
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+body.advantix-theme .advantix-primary-logo {
+    border-radius: 16px;
+    box-shadow: 0 28px 50px rgba(7, 11, 20, 0.30);
+    width: min(100%, 480px);
 }
 
 body.advantix-theme .loginbox,
@@ -387,9 +432,28 @@ body.advantix-theme .advantix-demo-badge__copy {
         padding: 22px 18px;
     }
 
-    body.advantix-theme .organizer-logo,
-    body.advantix-theme .event-logo {
-        max-height: 54px;
+    body.advantix-theme .advantix-stage-header-links {
+        align-items: flex-start;
+        display: block;
+    }
+
+    body.advantix-theme .advantix-stage-header-links .pull-right.flip {
+        margin-left: 0;
+        text-align: left;
+    }
+
+    body.advantix-theme .advantix-stage-header-links .header-part {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    body.advantix-theme .advantix-stage-header {
+        padding: 24px 16px 18px;
+    }
+
+    body.advantix-theme .advantix-primary-logo {
+        border-radius: 14px;
+        width: min(100%, 360px);
     }
 
     body.advantix-theme footer ul {

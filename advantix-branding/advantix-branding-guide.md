@@ -15,9 +15,9 @@ These SVGs in `advantix-branding/` are the editable source assets:
 - `advantix_icon_mark.svg`
   Use for favicon, app icon, avatar, and square mark applications.
 - `advantix_wordmark.svg`
-  Use for pretix organizer/event header image uploads.
+  Use for narrow compact applications or fallback raster exports where the full header primary lockup is too wide.
 - `advantix_logo_primary.svg`
-  Use for dark-surface hero, social, and presentation applications.
+  Use for dark-surface hero, social, presentation, and the bold Advantix storefront header treatment.
 - `advantix_logo_light.svg`
   Use for light-surface documentation and internal presentation applications.
 
@@ -55,7 +55,7 @@ Storefront settings that carry the brand:
 - `theme_color_background` -> `#F7F5F0`
 - `theme_color_success` -> `#2F7A62`
 - `theme_color_danger` -> `#A43A32`
-- storefront organizer/event header -> static `advantix-wordmark.svg`
+- storefront organizer/event header -> static `advantix-logo-primary.svg`
 - `organizer_logo_image` -> Advantix wordmark PNG fallback upload
 - `organizer_logo_image_inherit` -> enabled on events
 - `favicon` -> square icon PNG source
@@ -86,11 +86,12 @@ Committed runtime exports live in:
 
 ## Usage Rules
 
-- Prefer the wordmark for storefront headers.
+- Prefer the full primary logo for the Advantix storefront header when using the redesigned bold header stage.
+- Prefer the wordmark only where horizontal space is extremely constrained.
 - Prefer the square icon for favicon/app contexts.
 - Keep the mark on midnight or ivory backgrounds only.
 - Preserve the gold gradient and do not flatten it to a single-tone yellow.
-- Do not stretch the wordmark or crop the ticket-shaped `A`.
+- Do not stretch the primary logo or crop the ticket-shaped `A`.
 - Keep enough padding around the logo so the perforation details remain legible.
 
 ## Demo Copy Direction
