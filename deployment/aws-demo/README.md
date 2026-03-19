@@ -53,7 +53,7 @@ After you deploy, record these values in your operator notes:
 - Public HTTPS demo site on `advantix.tech`
 - `www` redirected to apex
 - root `/` redirected to `/advantix/`
-- seeded demo storefront for `Advantix`
+- seeded polished global demo storefront for `Advantix`
 - demo event pages under `/advantix/<event-slug>/`
 - pretix backend at `/control/`
 - seeded Advantix storefront branding with logo, favicon, hero copy, and social preview assets
@@ -80,7 +80,7 @@ deployment/aws-demo/deploy-demo-ec2.sh
 Optional overrides:
 
 ```bash
-AWS_REGION=ap-south-1 \
+AWS_REGION=us-west-2 \
 APP_NAME=advantix-pretix-demo \
 INSTANCE_TYPE=t3.small \
 deployment/aws-demo/deploy-demo-ec2.sh
@@ -201,7 +201,7 @@ docker compose ps
 docker compose logs --tail=200 pretix
 docker compose restart pretix
 curl -I -H "Host: advantix.tech" -H "X-Forwarded-Proto: https" http://127.0.0.1/advantix/
-curl -I -H "Host: advantix.tech" -H "X-Forwarded-Proto: https" http://127.0.0.1/advantix/mumbai-movie-night/
+curl -I -H "Host: advantix.tech" -H "X-Forwarded-Proto: https" http://127.0.0.1/advantix/hollywood-premiere-night/
 ```
 
 Useful CloudFront verification from a local terminal before DNS cutover:
@@ -209,7 +209,7 @@ Useful CloudFront verification from a local terminal before DNS cutover:
 ```bash
 curl -I --connect-to advantix.tech:443:<cloudfront-domain>:443 https://advantix.tech/
 curl -I --connect-to advantix.tech:443:<cloudfront-domain>:443 https://advantix.tech/advantix/
-curl -I --connect-to advantix.tech:443:<cloudfront-domain>:443 https://advantix.tech/advantix/mumbai-movie-night/
+curl -I --connect-to advantix.tech:443:<cloudfront-domain>:443 https://advantix.tech/advantix/hollywood-premiere-night/
 curl -I --connect-to www.advantix.tech:443:<cloudfront-domain>:443 "https://www.advantix.tech/advantix/?x=1"
 ```
 

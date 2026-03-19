@@ -90,6 +90,13 @@
         </nav>
     </footer>
 </div>
+{% if request.organizer and request.organizer.slug == "advantix" %}
+    <div class="advantix-demo-badge hidden-print" aria-label="{% trans "Demo site" %}">
+        <span class="advantix-demo-badge__eyebrow">{% trans "Preview" %}</span>
+        <span class="advantix-demo-badge__title">{% trans "Demo site" %}</span>
+        <span class="advantix-demo-badge__copy">{% trans "No live sales" %}</span>
+    </div>
+{% endif %}
 {% include "pretixpresale/fragment_modals.html" %}
 {% if DEBUG %}
     <script type="text/javascript" src="{% url 'javascript-catalog' lang=request.LANGUAGE_CODE %}"></script>
