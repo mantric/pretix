@@ -8,7 +8,7 @@ HEADER_WORDMARK_ASSET="$BRAND_ASSET_DIR/advantix-header-wordmark.png"
 ICON_SOURCE_ASSET="$BRAND_ASSET_DIR/advantix-icon-source.png"
 SOCIAL_PREVIEW_ASSET="$BRAND_ASSET_DIR/advantix-social-preview.png"
 
-AWS_REGION="${AWS_REGION:-ap-south-1}"
+AWS_REGION="${AWS_REGION:-us-east-1}"
 APP_NAME="${APP_NAME:-advantix-pretix-demo}"
 INSTANCE_TYPE="${INSTANCE_TYPE:-t3.small}"
 VOLUME_SIZE_GB="${VOLUME_SIZE_GB:-30}"
@@ -295,22 +295,22 @@ def store_branding_asset(source_path, target_name):
 def organizer_homepage_copy():
     return """
 <div class="advantix-hero">
-<p class="advantix-kicker">Premium entertainment ticketing demo</p>
-<h2>Movie nights, concerts, and live comedy for India.</h2>
-<p class="advantix-lede">Advantix is a branded pretix showcase for multiplex premieres, arena shows, comedy drops, and high-visibility entertainment launches.</p>
+<p class="advantix-kicker">Preview storefront</p>
+<h2>Premieres, headline onsales, and standout live events in one polished ticketing experience.</h2>
+<p class="advantix-lede">Advantix is a branded pretix showcase for film openings, venue launches, touring dates, and destination events.</p>
 <div class="advantix-highlights">
-<p>Mumbai movie drops</p>
-<p>Concert onsales</p>
-<p>Comedy tours</p>
+<p>Premiere launches</p>
+<p>Major city onsales</p>
+<p>International showcases</p>
 </div>
 <div class="advantix-hero-actions">
-<a class="btn btn-primary" href="/advantix/mumbai-movie-night/">View movie demo</a>
+<a class="btn btn-primary" href="/advantix/hollywood-premiere-night/">Explore featured demo</a>
 <a class="btn btn-default" href="/control/">Open demo backend</a>
 </div>
 </div>
 <div class="advantix-section-intro">
 <p class="advantix-section-eyebrow">Demo inventory</p>
-<p class="advantix-section-copy">Use the seeded public events below to test branded discovery, item selection, cart, checkout, and operator workflows from the same environment.</p>
+<p class="advantix-section-copy">Use the featured events below to test discovery, selection, cart, checkout, and operator workflows in a polished demo environment.</p>
 </div>
 """.strip()
 
@@ -351,60 +351,73 @@ orga.save()
 
 events = [
     {
-        "slug": "mumbai-movie-night",
-        "name": "Mumbai Movie Night",
-        "location": "PVR Juhu, Mumbai",
+        "slug": "hollywood-premiere-night",
+        "name": "Hollywood Premiere Night",
+        "location": "TCL Chinese Theatre, Los Angeles",
         "days": 10,
-        "kicker": "Friday premiere drop",
-        "headline": "A premium cinema night built for fast checkout.",
-        "summary": "Use this flow to validate tiered ticketing, storefront presentation, and a clean demo checkout for multiplex-style releases.",
+        "currency": "USD",
+        "timezone": "America/Los_Angeles",
+        "kicker": "Featured premiere",
+        "headline": "A polished onsale for screenings, openings, and fan events.",
+        "summary": "Use this flow to validate tiered ticketing, storefront presentation, and a clean checkout for premiere-led onsales.",
         "highlights": [
-            "INR pricing",
-            "Tiered seating inventory",
-            "Demo checkout only",
+            "USD pricing",
+            "Reserved seating mix",
+            "Preview checkout",
         ],
         "items": [
-            ("Silver Seat", Decimal("299.00"), 250),
-            ("Premium Seat", Decimal("599.00"), 100),
+            ("Standard Seat", Decimal("49.00"), 6),
+            ("Premiere Floor", Decimal("99.00"), 4),
         ],
     },
     {
-        "slug": "bangalore-live-comedy",
-        "name": "Bangalore Live Comedy",
-        "location": "Koramangala Indoor Arena, Bengaluru",
+        "slug": "brooklyn-comedy-weekend",
+        "name": "Brooklyn Comedy Weekend",
+        "location": "Kings Theatre, Brooklyn",
         "days": 18,
-        "kicker": "Stand-up special demo",
-        "headline": "A polished onsale flow for live entertainment drops.",
-        "summary": "This event demonstrates category pricing, upsell positioning, and how a touring comedy date looks in the branded storefront.",
+        "currency": "USD",
+        "timezone": "America/New_York",
+        "kicker": "Featured live date",
+        "headline": "A premium onsale flow for theaters, clubs, and comedy weekends.",
+        "summary": "This event demonstrates reserved seating, VIP upsell positioning, and how a polished live entertainment onsale feels in the storefront.",
         "highlights": [
-            "Comedy tour format",
-            "Front-row upsell",
+            "Reserved seating",
+            "VIP upsell path",
             "Organizer-ready admin",
         ],
         "items": [
-            ("General Admission", Decimal("499.00"), 300),
-            ("Front Row", Decimal("999.00"), 60),
+            ("Standard Admission", Decimal("39.00"), 6),
+            ("VIP Meet-and-Greet", Decimal("89.00"), 2),
         ],
     },
     {
-        "slug": "delhi-indie-concert",
-        "name": "Delhi Indie Concert",
-        "location": "NSIC Grounds, Okhla, New Delhi",
+        "slug": "london-live-showcase",
+        "name": "London Live Showcase",
+        "location": "Roundhouse, London",
         "days": 24,
-        "kicker": "Live music showcase",
-        "headline": "Concert ticketing with a cinematic storefront shell.",
-        "summary": "Use this seeded event to review pricing ladders, demand messaging, and how music-category inventory fits the Advantix brand.",
+        "currency": "GBP",
+        "timezone": "Europe/London",
+        "kicker": "International showcase",
+        "headline": "A global-ready storefront for flagship music and culture events.",
+        "summary": "Use this seeded event to review multi-market branding, social sharing, and how a destination live event sits alongside US inventory in the same organizer.",
         "highlights": [
-            "Concert-ready pricing",
-            "Large-venue presentation",
+            "GBP pricing",
+            "Destination event profile",
             "Shared organizer branding",
         ],
         "items": [
-            ("Floor Pass", Decimal("799.00"), 400),
-            ("Gold Circle", Decimal("1499.00"), 120),
+            ("General Admission", Decimal("59.00"), 6),
+            ("Gold Circle", Decimal("129.00"), 4),
         ],
     },
 ]
+
+target_slugs = {spec["slug"] for spec in events}
+legacy_demo_slugs = {
+    "mumbai-movie-night",
+    "bangalore-live-comedy",
+    "delhi-indie-concert",
+}
 
 with scope(organizer=orga):
     for spec in events:
@@ -413,7 +426,7 @@ with scope(organizer=orga):
             slug=spec["slug"],
             defaults={
                 "name": spec["name"],
-                "currency": "INR",
+                "currency": spec["currency"],
                 "date_from": now() + timedelta(days=spec["days"]),
                 "date_to": now() + timedelta(days=spec["days"], hours=3),
                 "presale_start": now() - timedelta(days=1),
@@ -426,16 +439,23 @@ with scope(organizer=orga):
         )
         if created:
             event.set_defaults()
+        event.name = spec["name"]
+        event.currency = spec["currency"]
+        event.date_from = now() + timedelta(days=spec["days"])
+        event.date_to = now() + timedelta(days=spec["days"], hours=3)
+        event.presale_start = now() - timedelta(days=1)
+        event.presale_end = now() + timedelta(days=spec["days"], hours=1)
+        event.location = spec["location"]
         event.live = True
         event.is_public = True
         event.plugins = "pretix.plugins.sendmail,pretix.plugins.statistics,pretix.plugins.checkinlists,pretix.plugins.manualpayment"
-        event.settings.timezone = "Asia/Kolkata"
+        event.settings.timezone = spec["timezone"]
         event.settings.primary_color = PRIMARY_GOLD
         event.settings.theme_color_success = SUCCESS
         event.settings.theme_color_danger = DANGER
         event.settings.theme_color_background = IVORY
         event.settings.contact_mail = "hello@advantix.tech"
-        event.settings.banner_text = "<strong>Demo checkout only.</strong> No live tickets or payments are being processed on this staging site."
+        event.settings.banner_text = "<strong>Preview environment.</strong> Orders and payments are simulated for this demo."
         event.settings.organizer_logo_image_inherit = True
         event.settings.logo_image = ""
         event.settings.favicon = organizer_favicon
@@ -478,6 +498,11 @@ with scope(organizer=orga):
 
         quota.items.set(event_items)
 
+    for old_event in orga.events.filter(slug__in=legacy_demo_slugs - target_slugs):
+        old_event.live = False
+        old_event.is_public = False
+        old_event.save()
+
 print("seed-complete")
 EOF
 send_file "$INSTANCE_ID" "$TMP_DIR/seed.py" "${APP_DIR}/seed.py"
@@ -494,7 +519,7 @@ echo "Region:          ${AWS_REGION}"
 echo "Instance ID:     ${INSTANCE_ID}"
 echo "Public IP:       ${PUBLIC_IP}"
 echo "Organizer URL:   http://${PUBLIC_IP}/advantix/"
-echo "Event URL:       http://${PUBLIC_IP}/advantix/mumbai-movie-night/"
+echo "Event URL:       http://${PUBLIC_IP}/advantix/hollywood-premiere-night/"
 echo "Backend URL:     http://${PUBLIC_IP}/control/"
 echo "Admin email:     ${ADMIN_EMAIL}"
 echo "Admin password:  ${ADMIN_PASSWORD}"

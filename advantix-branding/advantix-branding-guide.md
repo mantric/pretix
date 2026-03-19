@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Advantix is positioned as a premium entertainment ticketing brand for India-focused movie releases, concerts, comedy, and live event showcases. In this pretix demo, the brand layer is public-storefront only. Control/admin, transactional email, invoices, and PDF ticket output stay on standard pretix styling in v1.
+Advantix is positioned as a premium event ticketing brand for premieres, live entertainment, and flagship onsales, with a global-ready presentation and a demo event mix that leans toward major North American markets. In this pretix demo, the brand layer is public-storefront only. Control/admin, transactional email, invoices, and PDF ticket output stay on standard pretix styling in v1.
 
 ## Brand Idea
 
@@ -26,7 +26,7 @@ The small favicon SVGs are reference exports only:
 - `advantix_favicon_32.svg`
 - `advantix_favicon_16.svg`
 
-Do not upload SVGs directly into pretix settings. The public storefront settings are raster-oriented, so production use should go through the PNG exports listed below.
+Advantix storefront headers are rendered directly from the committed static SVG through the theme override. Favicon and social surfaces remain raster-oriented in pretix settings, so those should continue to use the PNG exports listed below.
 
 ## Approved Color Tokens
 
@@ -55,7 +55,8 @@ Storefront settings that carry the brand:
 - `theme_color_background` -> `#F7F5F0`
 - `theme_color_success` -> `#2F7A62`
 - `theme_color_danger` -> `#A43A32`
-- `organizer_logo_image` -> Advantix wordmark PNG
+- storefront organizer/event header -> static `advantix-wordmark.svg`
+- `organizer_logo_image` -> Advantix wordmark PNG fallback upload
 - `organizer_logo_image_inherit` -> enabled on events
 - `favicon` -> square icon PNG source
 - `og_image` -> social preview PNG on event pages
@@ -98,11 +99,11 @@ Use English only in v1. Copy should sound polished and ticketing-focused, not co
 
 Preferred categories for seeded content:
 
-- movie nights
-- premieres
-- concerts
-- stand-up comedy
-- live entertainment launches
+- film premieres
+- arena and theater onsales
+- comedy weekends
+- live music showcases
+- destination events
 
 ## Deploy and Maintenance
 

@@ -2,7 +2,7 @@
 instance_name=Advantix Demo
 url=http://__SITE_HOST__
 datadir=/data
-currency=INR
+currency=USD
 registration=false
 plugins_default=pretix.plugins.sendmail,pretix.plugins.statistics,pretix.plugins.checkinlists
 # When fronted by CloudFront on a real domain, switch url to https://<domain>
@@ -10,7 +10,7 @@ plugins_default=pretix.plugins.sendmail,pretix.plugins.statistics,pretix.plugins
 
 [locale]
 default=en
-timezone=Asia/Kolkata
+timezone=America/New_York
 
 [database]
 backend=postgresql
