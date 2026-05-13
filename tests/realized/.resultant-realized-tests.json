@@ -1,0 +1,11 @@
+{
+  "files": [
+    {
+      "path": "tests/realized/test_td_t_endpoint_patch_users_id_role.py",
+      "sha256": "cf869407bf9260353f20daa80f3e3d97ac60a4404a015f06f2772e921d9a8358"
+    }
+  ],
+  "project_id": "2d21507c-2436-4bc9-97bd-cea2a011b2fe",
+  "realized_tests_hash": "fc62a3cb8313d981cea9a4f5519de4d23ef323de394cab53c565c6e1225a048e",
+  "schema": "resultant.realized_tests_manifest.v1"
+}
