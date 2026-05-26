@@ -20,7 +20,7 @@ Reinventing ticket presales, one ticket at a time.
 Project status & release cycle
 ------------------------------
 
-While there is always a lot to do and improve on, pretix by now has been in use for thousands of events
+While there is always a lot to do and improve on, pretix by now has been in use for thousands of events and
 conferences that sold millions of tickets combined. We therefore think of pretix as being stable and ready to use.
 
 If you want to use or extend pretix, we strongly recommend to follow our `blog`_. We will announce all
