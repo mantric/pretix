@@ -85,6 +85,50 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Wait for EC2 poller to roll the container
+        # The EC2 systemd timer (advantix-deploy-poller.timer) fires
+        # every 60s. Sleeping here lets the poller pull the new
+        # `latest` image and restart the pretix container BEFORE we
+        # invalidate CloudFront — otherwise the next CF origin-pull
+        # would cache the OLD content and we'd need a second
+        # invalidation to fix it.
+        if: steps.tags.outputs.is_master == 'true'
+        run: sleep 90
+
+      - name: Invalidate CloudFront cache
+        # CloudFront caches /static/* aggressively (365d TTL on the
+        # behavior fronting advantix.tech). After a deploy, end users
+        # would otherwise see stale CSS/JS for up to a year. This step
+        # busts the edge cache so the new image's static assets are
+        # served on the next request.
+        #
+        # Requires:
+        #   * repo variable ADVANTIX_CF_DISTRIBUTION_ID set to the
+        #     CloudFront distribution id (E... or d...) that fronts
+        #     advantix.tech.
+        #   * the OIDC role (ADVANTIX_ECR_PUSH_ROLE_ARN) granted
+        #     cloudfront:CreateInvalidation on that distribution ARN.
+        #
+        # The step is a no-op (with a workflow warning) if the variable
+        # is unset — that lets the pipeline keep working during the
+        # bootstrap window before the variable + IAM grant are in place.
+        if: steps.tags.outputs.is_master == 'true'
+        env:
+          DISTRIBUTION_ID: ${{ vars.ADVANTIX_CF_DISTRIBUTION_ID }}
+        run: |
+          if [ -z "${DISTRIBUTION_ID}" ]; then
+            echo "::warning::ADVANTIX_CF_DISTRIBUTION_ID repo variable is not set — skipping CloudFront invalidation. Set it via: gh variable set ADVANTIX_CF_DISTRIBUTION_ID --repo mantric/pretix --body <id>"
+            exit 0
+          fi
+          INVALIDATION_ID="$(aws cloudfront create-invalidation \
+            --distribution-id "${DISTRIBUTION_ID}" \
+            --paths '/*' \
+            --query 'Invalidation.Id' \
+            --output text)"
+          echo "[cloudfront] created invalidation ${INVALIDATION_ID} on ${DISTRIBUTION_ID} for paths '/*'"
+          echo "INVALIDATION_ID=${INVALIDATION_ID}" >> "$GITHUB_OUTPUT"
+        id: invalidate
+
       - name: Summary
         run: |
           echo "## Pushed images" >> "$GITHUB_STEP_SUMMARY"
@@ -92,5 +136,9 @@ jobs:
           if [ "${{ steps.tags.outputs.is_master }}" = "true" ]; then
             echo "- \`${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest\` (master only)" >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "**Advantix EC2 webhook listener will pull \`latest\` on the corresponding push event.**" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Advantix EC2 deploy poller will pull \`latest\` on the next 60s cycle.**" >> "$GITHUB_STEP_SUMMARY"
+            if [ -n "${{ steps.invalidate.outputs.INVALIDATION_ID }}" ]; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "**CloudFront invalidation:** \`${{ steps.invalidate.outputs.INVALIDATION_ID }}\` for paths \`/*\`" >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi

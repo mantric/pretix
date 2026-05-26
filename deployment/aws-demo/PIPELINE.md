@@ -131,15 +131,45 @@ EC2 is already up, you're done.)
            "ecr:UploadLayerPart"
          ],
          "Resource": "arn:aws:ecr:us-east-1:<acct-id>:repository/advantix-pretix-demo"
+       },
+       {
+         "Effect": "Allow",
+         "Action": [
+           "cloudfront:CreateInvalidation"
+         ],
+         "Resource": "arn:aws:cloudfront::<acct-id>:distribution/<distribution-id>"
        }
      ]
    }
    ```
 
+   The `cloudfront:CreateInvalidation` permission is required so the
+   workflow can bust the edge cache after a deploy. See the
+   `Invalidate CloudFront cache` step in `advantix-image-build.yml`
+   and "CloudFront cache busting" below.
+
 3. **GitHub — add the role ARN as a repository secret** named `ADVANTIX_ECR_PUSH_ROLE_ARN`.
 
    ```sh
    gh secret set ADVANTIX_ECR_PUSH_ROLE_ARN --repo mantric/pretix --body "arn:aws:iam::<acct-id>:role/<role-name>"
+   ```
+
+4. **GitHub — add the CloudFront distribution id as a repository variable** named `ADVANTIX_CF_DISTRIBUTION_ID`.
+
+   The workflow's invalidation step is a no-op (with a warning) until
+   this variable is set, so the order of operations doesn't matter:
+   you can set the variable before or after deploying the workflow.
+
+   ```sh
+   gh variable set ADVANTIX_CF_DISTRIBUTION_ID --repo mantric/pretix --body "<distribution-id>"
+   ```
+
+   Find the distribution id with:
+
+   ```sh
+   aws cloudfront list-distributions \
+     --query 'DistributionList.Items[?Aliases.Items && contains(Aliases.Items, `advantix.tech`)].Id' \
+     --output text
    ```
 
 ### C. EC2 — install the deploy poller
@@ -235,6 +265,49 @@ bash deployment/aws-demo/rollback-prod.sh <short-sha>
 choose"; the asymmetric naming is intentional so the operator
 muscle memory matches the moment of urgency.
 
+### Manually invalidate CloudFront (if needed)
+
+The workflow automatically invalidates `/*` after every master
+deploy. If you need to bust the cache out-of-band (e.g., the
+workflow's invalidation step failed, or you changed CloudFront
+config directly), run:
+
+```sh
+DIST_ID="$(gh variable get ADVANTIX_CF_DISTRIBUTION_ID --repo mantric/pretix)"
+aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths '/*'
+```
+
+This is rare — the typical deploy path doesn't need it.
+
+---
+
+## CloudFront cache busting (Story 6.x follow-up)
+
+CloudFront's `/static/*` behavior fronts `advantix.tech` with a
+**365-day TTL**, so a fresh deploy's CSS/JS/images are invisible
+to end users at the CDN edge until that TTL expires.
+
+The workflow now handles this automatically by:
+
+1. Pushing the image to ECR with the `latest` tag.
+2. **Sleeping 90 seconds** to let the EC2 poller pick up `latest`
+   and `docker compose up -d` the new container. Without this
+   sleep, CloudFront's next origin-pull would re-cache the OLD
+   content and we'd need a second invalidation to fix it.
+3. Issuing one CloudFront invalidation against path `/*`. One path
+   per invalidation; well under the 1,000-paths-per-month free
+   tier. Invalidation typically propagates across the edge in
+   ~30-60s.
+
+Total wall-clock from merge to fresh content at the edge: ~5 min
+(2-3 min build + 90s wait + 60s CF propagate).
+
+If `ADVANTIX_CF_DISTRIBUTION_ID` is unset, the invalidation step
+posts a workflow warning and exits 0 — the rest of the deploy
+chain still runs. This is intentional so the workflow doesn't
+hard-fail during a bootstrap window where the IAM grant or repo
+variable is still being applied.
+
 ---
 
 ## Trade-offs and known sharp edges
@@ -277,7 +350,18 @@ The canonical "did the pipeline work" smoke test:
    workflow re-runs and now pushes BOTH `<sha>` and `latest`.
 5. Within 60s, the EC2 poller pulls `latest`. Tail
    `/var/log/advantix-deploy.log` for the `deployed digest …` line.
-6. Refresh `https://advantix.tech/advantix/` — your change is live.
+6. The workflow then sleeps 90s and issues a CloudFront invalidation
+   for path `/*`. Watch for the `[cloudfront] created invalidation ...`
+   line in the workflow logs.
+7. Within ~60s of step 6, CloudFront finishes propagating. Refresh
+   `https://advantix.tech/advantix/` — your change is live at the
+   edge. If you want to bypass CF entirely (e.g., to verify the
+   origin before edge propagation completes), probe the EC2 IP
+   directly:
 
-If step 6 fails, `bash rollback-prod.sh` returns to the previous SHA
-in under a minute.
+   ```sh
+   curl -H "Host: advantix.tech" http://<ec2-eip>/static/pretixplugins/advantixtheme/advantix.css
+   ```
+
+If step 7 fails, `bash rollback-prod.sh` returns to the previous SHA
+in under a minute (and the next master push will re-invalidate CF).
