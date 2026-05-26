@@ -1,4 +1,21 @@
 services:
+  # Caddy terminates TLS on the host and reverse-proxies to the
+  # pretix container. Replaces the prior CloudFront fronting.
+  # See Caddyfile for the routing rules + ACME notes.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      pretix:
+        condition: service_started
+
   db:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -37,8 +54,11 @@ services:
     environment:
       AUTOMIGRATE: "yes"
       NUM_WORKERS: "2"
-    ports:
-      - "80:80"
+    # Internal-only: Caddy reverse-proxies to pretix:80 over the
+    # docker network. No host port binding so Caddy can own 80/443
+    # on the EC2.
+    expose:
+      - "80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./pretix.cfg:/etc/pretix/pretix.cfg:ro
@@ -47,3 +67,9 @@ services:
 volumes:
   db-data:
   redis-data:
+  # Persists Caddy's ACME state (issued certs, account key, OCSP
+  # cache). Treat as durable — losing it triggers re-issuance and
+  # can hit Let's Encrypt rate limits (5 certs per exact-domain-set
+  # per week).
+  caddy-data:
+  caddy-config:
