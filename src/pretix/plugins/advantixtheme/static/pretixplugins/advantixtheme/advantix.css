@@ -1,3 +1,28 @@
+/*
+ * Pilot deploy smoke marker — Story 6.9 (RLDEV-255) golden-path verification.
+ *
+ * The .advantix-pilot-deploy-marker-2026-05-26 selector below is purely
+ * a token for end-to-end pipeline verification. Curl the served CSS:
+ *
+ *   curl -s https://advantix.tech/static/pretixplugins/advantixtheme/advantix.css \
+ *     | grep advantix-pilot-deploy-marker-2026-05-26
+ *
+ * If the marker is present, then: PR merged on master -> GH Actions built
+ * the image -> ECR `latest` moved -> EC2 deploy poller pulled within ~60s
+ * -> Docker container restarted -> CloudFront (eventually) serves the new
+ * static asset. CloudFront's TTL for /static is long, so the curl above
+ * may need a cache-busting query param OR a direct origin check via
+ *
+ *   curl -sH "Host: advantix.tech" http://<ec2-public-ip>/static/pretixplugins/advantixtheme/advantix.css \
+ *     | grep advantix-pilot-deploy-marker-2026-05-26
+ *
+ * Remove this marker once the pilot pipeline is validated.
+ */
+.advantix-pilot-deploy-marker-2026-05-26 {
+    /* Intentional no-op rule; never selected. Marker only. */
+    display: none;
+}
+
 body.advantix-theme {
     --advantix-midnight: #0A0E1A;
     --advantix-surface: #141828;
