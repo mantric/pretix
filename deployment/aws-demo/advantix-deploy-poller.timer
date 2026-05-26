@@ -1,0 +1,18 @@
+[Unit]
+Description=Advantix Pretix deploy poller (fires every minute)
+
+[Timer]
+# Fire 60 seconds after boot, then every 60 seconds. AccuracySec
+# tightens the default fuzz so we don't drift by more than ~5s.
+OnBootSec=60
+OnUnitActiveSec=60
+AccuracySec=5
+
+# When the timer is enabled but the instance was off for a while,
+# fire immediately on boot to catch up. We don't want to wait a
+# full minute after a reboot before we're current.
+Persistent=true
+Unit=advantix-deploy-poller.service
+
+[Install]
+WantedBy=timers.target

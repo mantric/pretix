@@ -1,0 +1,15 @@
+[Unit]
+Description=Advantix Pretix deploy poller (one-shot, invoked by .timer)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/advantix-deploy.env
+User=root
+WorkingDirectory=/opt/advantix-pretix-demo
+ExecStart=/opt/advantix-pretix-demo/advantix-deploy-poller.sh
+
+# Don't restart on failure — the .timer will fire again in 60s and
+# retry naturally. Restart-loops would hide root causes.
+Restart=no

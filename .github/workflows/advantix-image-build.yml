@@ -1,0 +1,96 @@
+name: Advantix image build
+
+# Builds the Advantix pretix Docker image and pushes it to ECR under
+# two tags:
+#
+#   * `latest`            — the canonical "deploy this on master" tag
+#   * `<short-sha>`       — immutable per-commit tag used for rollback
+#
+# The Advantix EC2 webhook listener (deployment/aws-demo/webhook-listener.py)
+# pulls `latest` and restarts the pretix container when this workflow
+# finishes successfully on a master push. PR builds push to ECR too,
+# but only under the per-commit tag, so reviewers can pin/preview a
+# specific SHA without overwriting the live `latest`.
+#
+# Story 6.5 (RLDEV-251). See deployment/aws-demo/README.md and
+# deployment/aws-demo/PIPELINE.md for the end-to-end runbook.
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  id-token: write     # required for AWS OIDC
+  contents: read
+
+concurrency:
+  # Coalesce in-flight builds for the same ref. Cancels superseded
+  # builds so we never race the webhook listener with stale images.
+  group: advantix-image-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: advantix-pretix-demo
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Compute image tags
+        id: tags
+        run: |
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF}" = "refs/heads/master" ]; then
+            echo "is_master=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_master=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure AWS credentials (OIDC)
+        # IAM role with trust policy scoped to this repo + master/PR refs.
+        # See deployment/aws-demo/PIPELINE.md for the exact role bootstrap.
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ADVANTIX_ECR_PUSH_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          provenance: false
+          # Always push the per-commit tag. Push `latest` only on
+          # master so PR builds can't overwrite the live tag.
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tags.outputs.short_sha }}
+            ${{ steps.tags.outputs.is_master == 'true' && format('{0}/{1}:latest', steps.ecr.outputs.registry, env.ECR_REPOSITORY) || '' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          echo "## Pushed images" >> "$GITHUB_STEP_SUMMARY"
+          echo "- \`${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tags.outputs.short_sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.tags.outputs.is_master }}" = "true" ]; then
+            echo "- \`${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest\` (master only)" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Advantix EC2 webhook listener will pull \`latest\` on the corresponding push event.**" >> "$GITHUB_STEP_SUMMARY"
+          fi
