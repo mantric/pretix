@@ -22,14 +22,22 @@ jobs:
     runs-on: ubuntu-22.04
     name: Tests
     strategy:
+      # TODO(RLDEV-249, pilot-only): restore the full matrix below after
+      # Advantix Pretix pilot. The pilot's tight feedback loop with Prem
+      # cannot afford the 4-combo runtime, so we narrow CI to the matrix
+      # cell that matches the deployed pilot env (Python 3.11 + Postgres
+      # 15). Restore:
+      #
+      #   python-version: ["3.10", "3.11", "3.13"]
+      #   database: [sqlite, postgres]
+      #   exclude:
+      #     - database: sqlite
+      #       python-version: "3.10"
+      #     - database: sqlite
+      #       python-version: "3.11"
       matrix:
-        python-version: ["3.10", "3.11", "3.13"]
-        database: [sqlite, postgres]
-        exclude:
-          - database: sqlite
-            python-version: "3.10"
-          - database: sqlite
-            python-version: "3.11"
+        python-version: ["3.11"]
+        database: [postgres]
     services:
       postgres:
         image: postgres:15
