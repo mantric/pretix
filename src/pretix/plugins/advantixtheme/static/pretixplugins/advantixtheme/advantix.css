@@ -23,6 +23,24 @@
     display: none;
 }
 
+/*
+ * Post-Caddy-cutover smoke marker — Epic 6 closeout verification.
+ * Same intent as the Story 6.9 marker above, but this one specifically
+ * proves the chain works after the CloudFront -> Caddy cutover landed
+ * (mantric/pretix#46). Probe with:
+ *
+ *   curl -s https://advantix.tech/static/pretixplugins/advantixtheme/advantix.css \
+ *     | grep advantix-caddy-cutover-2026-05-26
+ *
+ * The HTTPS path now flows through Caddy on the EC2 (no CloudFront in
+ * the chain), so no edge cache busting is needed; the marker should
+ * appear at the URL above within ~3-5 min of the master merge.
+ */
+.advantix-caddy-cutover-2026-05-26 {
+    /* Intentional no-op rule; never selected. Marker only. */
+    display: none;
+}
+
 body.advantix-theme {
     --advantix-midnight: #0A0E1A;
     --advantix-surface: #141828;
