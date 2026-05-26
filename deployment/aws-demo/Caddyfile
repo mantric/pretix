@@ -1,0 +1,59 @@
+# Advantix demo TLS terminator + reverse proxy.
+#
+# This replaces the previous CloudFront-fronted architecture
+# (CF + ACM + viewer function) with a single-server stack:
+#
+#   client --> [Caddy on EC2: 80/443] --> [pretix container: 80]
+#
+# Why we did this for the Advantix demo pilot:
+#   * CloudFront's /static/* TTL (365d) + opaque CF->origin
+#     connectivity issues meant fresh deploys weren't visible at the
+#     edge without a per-deploy invalidation, and even that depends
+#     on CF->origin actually reaching the EC2.
+#   * For a single-server, single-customer demo, none of CF's
+#     features (edge cache, DDoS shield, geo distribution) pay for
+#     their operational complexity.
+#
+# Caddy handles ACME (Let's Encrypt) automatically using the http-01
+# challenge on port 80. The issued cert + key + ACME state live in
+# the `caddy_data` named volume in docker-compose.yml. DO NOT delete
+# that volume or you'll re-issue from scratch and may trip ACME rate
+# limits (5 certs per exact-domain-set per week).
+#
+# Two redirect rules that used to live in
+# `advantix-root-redirect.js` (a CloudFront viewer-request function)
+# now live here instead:
+#   * www.advantix.tech     -> https://advantix.tech (301 permanent)
+#   * GET advantix.tech /   -> /advantix/            (302 found)
+
+# www -> apex (preserves URI + query).
+www.advantix.tech {
+    redir https://advantix.tech{uri} permanent
+}
+
+# Apex hosts the pretix UI.
+advantix.tech {
+    encode gzip zstd
+
+    # Root path bounce so visitors landing on advantix.tech are
+    # taken straight to the Advantix organizer slug. Matches the
+    # behavior the CloudFront function used to provide.
+    @root path /
+    redir @root /advantix/ 302
+
+    # Everything else proxies into the pretix container.
+    # `pretix:80` is resolved via the docker compose network — the
+    # pretix container exposes 80 internally (see docker-compose.yml)
+    # but no longer binds host port 80, because Caddy owns 80+443
+    # on the host.
+    #
+    # X-Forwarded-Proto=https tells pretix's Django app (with
+    # trust_x_forwarded_proto=true in pretix.cfg) that the original
+    # request was HTTPS, so it emits https:// URLs in redirects /
+    # absolute links rather than http://.
+    reverse_proxy pretix:80 {
+        header_up Host {host}
+        header_up X-Forwarded-Proto https
+        header_up X-Forwarded-For {remote}
+    }
+}
