@@ -19,11 +19,11 @@ HA stack.
 > ACM front-end. That layer was removed for the Advantix pilot
 > because the demo doesn't benefit from edge caching or DDoS
 > shielding and the CF→origin path added operational surface that
-> wasn't pulling its weight. The pre-CF code path (legacy CF function
-> `advantix-root-redirect.js`, deploy-script CF blocks) is preserved
-> in the repo as historical context but is no longer the deploy
-> target. See "Cutover from CloudFront" below for the migration
-> runbook.
+> wasn't pulling its weight. See "Cutover from CloudFront" below
+> for the migration runbook (kept as historical context). The
+> dormant CF artifacts — viewer-request function source, workflow
+> invalidation step, repo variable — were removed in a cleanup PR
+> once the Caddy stack soaked.
 
 ## Final Architecture
 
@@ -74,13 +74,12 @@ After you deploy, record these values in your operator notes:
 - `nginx.conf`: in-pretix-container nginx config (serves the
   django unix socket; reached by Caddy on `pretix:80`)
 - `pretix.cfg.template`: rendered instance config
-- `deploy-demo-ec2.sh`: one-shot EC2 bootstrap (legacy: still
-  provisions CloudFront — see "Legacy CloudFront tooling" below)
+- `deploy-demo-ec2.sh`: one-shot EC2 bootstrap (legacy CF
+  provisioning blocks inside it are no longer the deploy target;
+  removing them is queued as a separate follow-up since they don't
+  hurt anyone in the current pipeline)
 - `advantix-deploy-poller.{sh,service,timer}`: master-push deploy
   poller (see `PIPELINE.md`)
-- `advantix-root-redirect.js`: **legacy** CloudFront function
-  source, retained for historical context only — its behavior now
-  lives in `Caddyfile`
 - `rollback-prod.sh`: re-tag an older ECR image as `latest`
 
 ## Phase 1: Base EC2 Deploy
@@ -228,21 +227,7 @@ cutover now, the sequence is:
 7. **Disable CloudFront.** Once the Caddy stack is verified, set
    the CloudFront distribution `Enabled=false` (admin profile).
    Leave it disabled for a day or two as a fast rollback before
-   deleting. The CF function `advantix-root-redirect` can be
-   left in place until full delete — it's only invoked while the
-   distribution is enabled.
-
-8. **Unset the CF invalidation variable.** The pipeline's
-   `Invalidate CloudFront cache` step is a graceful no-op when
-   the variable is unset, so:
-
-   ```bash
-   gh variable delete ADVANTIX_CF_DISTRIBUTION_ID --repo mantric/pretix
-   ```
-
-   The step will warn-and-exit on subsequent master pushes
-   without doing anything destructive. A follow-up PR will rip
-   the step out entirely.
+   deleting.
 
 **Cutover downtime:** ~5-15 minutes total, dominated by DNS
 propagation + first ACME issuance.
@@ -288,17 +273,22 @@ HTTP-served pages.
 
 ## Legacy CloudFront tooling
 
-These files are retained for historical context and rollback only.
-They are not part of the current deploy target.
+The CF stack has been fully retired. What was removed:
 
-- `advantix-root-redirect.js`: the CloudFront viewer-request
-  function source. Its behavior now lives in `Caddyfile`.
+- `advantix-root-redirect.js` — the CloudFront viewer-request
+  function source. The www→apex and /→/advantix/ redirects now
+  live in `Caddyfile`.
+- `Invalidate CloudFront cache` step (and the 90s wait that
+  preceded it) in `.github/workflows/advantix-image-build.yml`.
+  The `ADVANTIX_CF_DISTRIBUTION_ID` repo variable can be deleted
+  to silence stragglers: `gh variable delete ADVANTIX_CF_DISTRIBUTION_ID --repo mantric/pretix`.
+
+Still in the repo but not in the current deploy path:
+
 - The CloudFront-provisioning blocks inside `deploy-demo-ec2.sh`.
-- The `Invalidate CloudFront cache` step in
-  `.github/workflows/advantix-image-build.yml`. The step is
-  graceful no-op when `ADVANTIX_CF_DISTRIBUTION_ID` is unset; a
-  follow-up PR will remove it once the cutover is verified for a
-  week.
+  They don't run unless the script is invoked, which it isn't on
+  steady-state deploys. Removing them is queued as a separate
+  follow-up.
 
 ## Operational Notes
 
